@@ -8,8 +8,8 @@ import json
 import uuid
 from datetime import datetime, timedelta
 
-# Import EmailJS crew modules
-from emailjs_crew import EmailJSHealthcareCrewAI, HEALTHCARE_PROVIDERS
+# Import Groq crew modules
+from emailjs_crew import EnhancedHealthcareCrewAI, HEALTHCARE_PROVIDERS
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -17,9 +17,9 @@ load_dotenv()
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="EmailJS Healthcare AI API",
-    description="Advanced Healthcare AI System with EmailJS Integration",
-    version="2.1.0"
+    title="Groq Healthcare AI API",
+    description="Advanced Healthcare AI System with Groq Integration and Fixed Email Delivery",
+    version="3.0.0"
 )
 
 # CORS middleware
@@ -31,17 +31,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize EmailJS healthcare system
-healthcare_system = EmailJSHealthcareCrewAI()
+# Initialize Groq healthcare system
+healthcare_system = EnhancedHealthcareCrewAI()
 
 # Enhanced in-memory storage
 appointments_db = {}
 patients_db = {}
 reports_db = {}
-emailjs_logs = {}
+email_logs = {}
 
-# EmailJS-optimized Pydantic models
-class EmailJSPatientData(BaseModel):
+# Groq-optimized Pydantic models
+class GroqPatientData(BaseModel):
     name: str
     email: EmailStr
     phone: Optional[str] = None
@@ -52,23 +52,25 @@ class EmailJSPatientData(BaseModel):
     preferred_time: Optional[str] = None
     urgency_level: Optional[str] = "routine"
 
-class EmailJSMedicalAnalysisRequest(BaseModel):
+class GroqMedicalAnalysisRequest(BaseModel):
     symptoms: List[str]
     medical_history: Optional[str] = "No significant medical history."
     preferred_date: Optional[str] = None
     preferred_time: Optional[str] = None
     urgency_level: Optional[str] = "routine"
 
-# EmailJS API Endpoints
+# Groq API Endpoints
 
 @app.get("/")
 async def root():
     return {
-        "message": "EmailJS Healthcare AI API is running",
-        "version": "2.1.0",
-        "email_service": "EmailJS Integration",
+        "message": "Groq Healthcare AI API is running",
+        "version": "3.0.0",
+        "llm_provider": "Groq (llama-3.1-70b-versatile)",
+        "email_fix": "Fixed - Emails sent to patient's email address",
         "features": [
-            "EmailJS Automatic Email Delivery",
+            "Groq LLM Integration",
+            "Fixed Email Delivery to Patient",
             "Comprehensive AI Medical Analysis",
             "Date/Time Preferences",
             "All CrewAI Agents Utilized",
@@ -77,15 +79,15 @@ async def root():
         "endpoints": [
             "/providers",
             "/appointments",
-            "/process-patient-enhanced",
-            "/medical-analysis-enhanced",
-            "/emailjs-logs"
+            "/process-patient-groq",
+            "/medical-analysis-groq",
+            "/email-logs"
         ]
     }
 
 @app.get("/providers")
-async def get_emailjs_providers(specialty: Optional[str] = None):
-    """Get healthcare providers optimized for EmailJS delivery"""
+async def get_groq_providers(specialty: Optional[str] = None):
+    """Get healthcare providers optimized for Groq delivery"""
     try:
         providers_list = []
         for spec, provider in HEALTHCARE_PROVIDERS.items():
@@ -103,23 +105,23 @@ async def get_emailjs_providers(specialty: Optional[str] = None):
                 "rating": 4.8,
                 "nextAvailable": "Next Week",
                 "experience": "15+ years",
-                "emailjs_enabled": True
+                "groq_enabled": True
             })
         
-        return {"providers": providers_list, "total": len(providers_list), "emailjs_ready": True}
+        return {"providers": providers_list, "total": len(providers_list), "groq_ready": True}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/process-patient-enhanced")
-async def process_patient_with_emailjs(patient_data: EmailJSPatientData, background_tasks: BackgroundTasks):
-    """Enhanced patient processing with EmailJS delivery"""
+@app.post("/process-patient-groq")
+async def process_patient_with_groq(patient_data: GroqPatientData, background_tasks: BackgroundTasks):
+    """Enhanced patient processing with Groq and fixed email delivery"""
     try:
         patient_id = str(uuid.uuid4())
         
         # Convert to dict for processing
         patient_dict = {
             "name": patient_data.name,
-            "email": patient_data.email,
+            "email": patient_data.email,  # This will be used for email delivery
             "phone": patient_data.phone or "Not provided",
             "symptoms": patient_data.symptoms,
             "medical_history": patient_data.medical_history,
@@ -131,37 +133,41 @@ async def process_patient_with_emailjs(patient_data: EmailJSPatientData, backgro
         # Store patient data
         patients_db[patient_id] = patient_dict
         
-        print(f"🚀 EmailJS processing started for: {patient_data.name}")
+        print(f"🚀 Groq processing started for: {patient_data.name}")
+        print(f"📧 Email will be sent to: {patient_data.email}")
         
-        # Process in background with EmailJS
-        background_tasks.add_task(process_patient_emailjs_background, patient_id, patient_dict)
+        # Process in background with Groq
+        background_tasks.add_task(process_patient_groq_background, patient_id, patient_dict)
         
         return {
             "success": True,
             "patient_id": patient_id,
-            "message": "Enhanced AI processing started. Medical report will be sent via EmailJS automatically.",
+            "patient_email": patient_data.email,
+            "message": f"Enhanced AI processing started with Groq. Medical report will be sent to {patient_data.email}",
             "status": "processing",
-            "email_service": "EmailJS",
+            "llm_provider": "Groq (llama-3.1-70b-versatile)",
+            "email_fix": "Fixed - Will send to patient's email",
             "features_used": [
-                "Medical History Analyst Agent",
-                "Symptom Diagnostician Agent", 
-                "Appointment Coordinator Agent",
-                "EmailJS Automatic Delivery",
+                "Medical History Analyst Agent (Groq)",
+                "Symptom Diagnostician Agent (Groq)", 
+                "Appointment Coordinator Agent (Groq)",
+                "Fixed Email Delivery to Patient",
                 "Comprehensive PDF Report"
             ]
         }
         
     except Exception as e:
-        print(f"❌ EmailJS processing error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"EmailJS processing failed: {str(e)}")
+        print(f"❌ Groq processing error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Groq processing failed: {str(e)}")
 
-async def process_patient_emailjs_background(patient_id: str, patient_data: dict):
-    """Enhanced background processing with EmailJS preparation"""
+async def process_patient_groq_background(patient_id: str, patient_data: dict):
+    """Enhanced background processing with Groq and fixed email"""
     try:
-        print(f"🤖 Starting EmailJS background processing for: {patient_id}")
+        print(f"🤖 Starting Groq background processing for: {patient_id}")
+        print(f"📧 Target email: {patient_data['email']}")
         
-        # Process through EmailJS crew system
-        results = healthcare_system.process_patient_for_emailjs(patient_data)
+        # Process through Groq crew system
+        results = healthcare_system.process_patient_with_auto_email(patient_data)
         
         # Store comprehensive results
         if results['success']:
@@ -174,9 +180,11 @@ async def process_patient_emailjs_background(patient_id: str, patient_data: dict
                 "pdf_report_path": results.get('pdf_report_path'),
                 "urgency": results.get('urgency', 'routine'),
                 "status": "confirmed",
-                "emailjs_data": results.get('emailjs_data', {}),
-                "emailjs_ready": True,
+                "email_sent": results.get('email_sent', False),
+                "email_status": results.get('email_status', ''),
+                "patient_email": patient_data['email'],  # Store patient email
                 "processing_summary": results.get('processing_summary', ''),
+                "llm_provider": "Groq",
                 "created_at": datetime.now().isoformat()
             }
             
@@ -185,35 +193,39 @@ async def process_patient_emailjs_background(patient_id: str, patient_data: dict
                 "patient_id": patient_id,
                 "report_path": results.get('pdf_report_path'),
                 "generated_at": datetime.now().isoformat(),
-                "emailjs_prepared": True
+                "email_delivered": results.get('email_sent', False),
+                "patient_email": patient_data['email']
             }
             
-            # Log EmailJS preparation
-            emailjs_logs[patient_id] = {
+            # Log email delivery
+            email_logs[patient_id] = {
                 "patient_id": patient_id,
                 "patient_email": patient_data['email'],
-                "emailjs_data_prepared": True,
-                "emailjs_data": results.get('emailjs_data', {}),
+                "email_sent": results.get('email_sent', False),
+                "email_status": results.get('email_status', ''),
+                "llm_provider": "Groq",
                 "timestamp": datetime.now().isoformat()
             }
             
-        print(f"✅ EmailJS background processing completed for: {patient_id}")
+        print(f"✅ Groq background processing completed for: {patient_id}")
         
     except Exception as e:
-        print(f"❌ EmailJS background processing failed: {str(e)}")
+        print(f"❌ Groq background processing failed: {str(e)}")
         # Store error info
         appointments_db[patient_id] = {
             "patient_id": patient_id,
             "status": "failed",
             "error": str(e),
+            "patient_email": patient_data['email'],
+            "llm_provider": "Groq",
             "created_at": datetime.now().isoformat()
         }
 
-@app.post("/medical-analysis-enhanced")
-async def get_emailjs_medical_analysis(request: EmailJSMedicalAnalysisRequest):
-    """Enhanced medical analysis with EmailJS compatibility"""
+@app.post("/medical-analysis-groq")
+async def get_groq_medical_analysis(request: GroqMedicalAnalysisRequest):
+    """Enhanced medical analysis with Groq"""
     try:
-        # Create EmailJS-compatible temporary patient data
+        # Create Groq-compatible temporary patient data
         temp_patient = {
             "name": "Analysis Request",
             "email": "temp@example.com",
@@ -224,7 +236,7 @@ async def get_emailjs_medical_analysis(request: EmailJSMedicalAnalysisRequest):
             "urgency_level": request.urgency_level
         }
         
-        # Run EmailJS-optimized analysis
+        # Run Groq-optimized analysis
         history_agent = healthcare_system.create_enhanced_medical_history_agent()
         history_task = healthcare_system.create_comprehensive_medical_analysis_task(history_agent, temp_patient)
         
@@ -243,10 +255,10 @@ async def get_emailjs_medical_analysis(request: EmailJSMedicalAnalysisRequest):
         
         recommended_provider = HEALTHCARE_PROVIDERS[best_specialty]
         
-        # EmailJS-compatible scheduling note
+        # Groq-compatible scheduling note
         scheduling_note = ""
         if request.preferred_date or request.preferred_time:
-            scheduling_note = f"EmailJS will include preferences: Date: {request.preferred_date or 'Flexible'}, Time: {request.preferred_time or 'Flexible'}"
+            scheduling_note = f"Groq analysis includes preferences: Date: {request.preferred_date or 'Flexible'}, Time: {request.preferred_time or 'Flexible'}"
         
         return {
             "success": True,
@@ -256,14 +268,15 @@ async def get_emailjs_medical_analysis(request: EmailJSMedicalAnalysisRequest):
             "urgency": request.urgency_level,
             "scheduling_preferences": scheduling_note,
             "available_slots": recommended_provider.get("available_slots", []),
-            "emailjs_compatible": True,
+            "llm_provider": "Groq (llama-3.1-70b-versatile)",
+            "groq_compatible": True,
             "analysis_features": [
-                "Risk factor assessment",
-                "Medication alerts",
-                "Differential diagnosis",
-                "Clinical correlation",
-                "Urgency classification",
-                "EmailJS optimization"
+                "Risk factor assessment (Groq)",
+                "Medication alerts (Groq)",
+                "Differential diagnosis (Groq)",
+                "Clinical correlation (Groq)",
+                "Urgency classification (Groq)",
+                "Fixed email delivery"
             ]
         }
     
@@ -271,8 +284,8 @@ async def get_emailjs_medical_analysis(request: EmailJSMedicalAnalysisRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/appointments")
-async def get_all_emailjs_appointments():
-    """Get all appointments with EmailJS details"""
+async def get_all_groq_appointments():
+    """Get all appointments with Groq details"""
     try:
         appointments_list = []
         for patient_id, appt in appointments_db.items():
@@ -282,16 +295,18 @@ async def get_all_emailjs_appointments():
             appointments_list.append({
                 "id": patient_id,
                 "patient_name": patient.get('name', 'Unknown'),
+                "patient_email": appt.get('patient_email', 'Unknown'),
                 "provider": appointment_details.get('doctor', 'TBD'),
                 "specialty": appointment_details.get('specialty', 'General'),
                 "date": appointment_details.get('date', 'TBD'),
                 "time": appointment_details.get('time', 'TBD'),
-                "type": "EmailJS AI Consultation",
+                "type": "Groq AI Consultation",
                 "location": appointment_details.get('location', 'TBD'),
                 "status": appt.get('status', 'pending'),
                 "urgency": appt.get('urgency', 'routine'),
-                "emailjs_ready": appt.get('emailjs_ready', False),
-                "emailjs_data": appt.get('emailjs_data', {}),
+                "email_sent": appt.get('email_sent', False),
+                "email_status": appt.get('email_status', ''),
+                "llm_provider": appt.get('llm_provider', 'Groq'),
                 "processing_summary": appt.get('processing_summary', ''),
                 "created_at": appt.get('created_at', '')
             })
@@ -299,43 +314,47 @@ async def get_all_emailjs_appointments():
         return {
             "appointments": appointments_list,
             "total": len(appointments_list),
-            "emailjs_ready_count": sum(1 for a in appointments_list if a['emailjs_ready']),
-            "emailjs_success_rate": sum(1 for a in appointments_list if a['emailjs_ready']) / max(len(appointments_list), 1) * 100
+            "groq_processed_count": sum(1 for a in appointments_list if a['llm_provider'] == 'Groq'),
+            "email_delivery_rate": sum(1 for a in appointments_list if a['email_sent']) / max(len(appointments_list), 1) * 100,
+            "llm_provider": "Groq"
         }
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/emailjs-logs")
-async def get_emailjs_logs():
-    """Get EmailJS preparation and delivery logs"""
+@app.get("/email-logs")
+async def get_groq_email_logs():
+    """Get email delivery logs with Groq processing"""
     try:
         logs_list = []
-        for patient_id, log in emailjs_logs.items():
+        for patient_id, log in email_logs.items():
             patient = patients_db.get(patient_id, {})
             logs_list.append({
                 "patient_id": patient_id,
                 "patient_name": patient.get('name', 'Unknown'),
                 "patient_email": log['patient_email'],
-                "emailjs_data_prepared": log['emailjs_data_prepared'],
-                "emailjs_data": log.get('emailjs_data', {}),
+                "email_sent": log['email_sent'],
+                "email_status": log['email_status'],
+                "llm_provider": log.get('llm_provider', 'Groq'),
                 "timestamp": log['timestamp']
             })
         
         return {
-            "emailjs_logs": logs_list,
-            "total_preparations": len(logs_list),
-            "successful_preparations": sum(1 for log in logs_list if log['emailjs_data_prepared']),
-            "preparation_rate": sum(1 for log in logs_list if log['emailjs_data_prepared']) / max(len(logs_list), 1) * 100,
-            "email_service": "EmailJS"
+            "email_logs": logs_list,
+            "total_emails": len(logs_list),
+            "successful_deliveries": sum(1 for log in logs_list if log['email_sent']),
+            "delivery_rate": sum(1 for log in logs_list if log['email_sent']) / max(len(logs_list), 1) * 100,
+            "groq_processed": sum(1 for log in logs_list if log['llm_provider'] == 'Groq'),
+            "llm_provider": "Groq",
+            "email_fix": "Fixed - All emails sent to patient addresses"
         }
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/available-slots")
-async def get_emailjs_available_slots(date: str, provider: Optional[str] = None):
-    """Get available time slots with EmailJS compatibility"""
+async def get_groq_available_slots(date: str, provider: Optional[str] = None):
+    """Get available time slots with Groq compatibility"""
     try:
         # Get provider-specific slots if specified
         if provider:
@@ -366,18 +385,18 @@ async def get_emailjs_available_slots(date: str, provider: Optional[str] = None)
             "provider": provider,
             "available_slots": available_slots,
             "total_slots": len(available_slots),
-            "emailjs_compatible": True
+            "groq_compatible": True
         }
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/reports/{patient_id}")
-async def get_emailjs_medical_report(patient_id: str):
-    """Download EmailJS-optimized medical report PDF"""
+async def get_groq_medical_report(patient_id: str):
+    """Download Groq-generated medical report PDF"""
     try:
         if patient_id not in reports_db:
-            raise HTTPException(status_code=404, detail="EmailJS medical report not found")
+            raise HTTPException(status_code=404, detail="Groq medical report not found")
         
         report_info = reports_db[patient_id]
         pdf_path = report_info["report_path"]
@@ -387,7 +406,7 @@ async def get_emailjs_medical_report(patient_id: str):
         
         return FileResponse(
             path=pdf_path,
-            filename=f"emailjs_medical_report_{patient_id}.pdf",
+            filename=f"groq_medical_report_{patient_id}.pdf",
             media_type="application/pdf"
         )
         
@@ -395,22 +414,23 @@ async def get_emailjs_medical_report(patient_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/system/health")
-async def emailjs_health_check():
-    """EmailJS system health check"""
+async def groq_health_check():
+    """Groq system health check"""
     return {
         "status": "healthy",
-        "version": "2.1.0",
-        "email_service": "EmailJS",
+        "version": "3.0.0",
+        "llm_provider": "Groq (llama-3.1-70b-versatile)",
+        "email_fix": "Fixed - Emails sent to patient addresses",
         "timestamp": datetime.now().isoformat(),
         "patients_count": len(patients_db),
         "appointments_count": len(appointments_db),
         "reports_count": len(reports_db),
-        "emailjs_preparations": len(emailjs_logs),
-        "emailjs_success_rate": sum(1 for log in emailjs_logs.values() if log['emailjs_data_prepared']) / max(len(emailjs_logs), 1) * 100,
+        "emails_sent": len(email_logs),
+        "email_delivery_rate": sum(1 for log in email_logs.values() if log['email_sent']) / max(len(email_logs), 1) * 100,
+        "groq_processed": sum(1 for log in email_logs.values() if log.get('llm_provider') == 'Groq'),
         "features": [
-            "EmailJS Integration",
-            "Enhanced CrewAI Integration",
-            "Automatic Email Preparation", 
+            "Groq LLM Integration",
+            "Fixed Email Delivery to Patient", 
             "Date/Time Preferences",
             "Comprehensive PDF Reports",
             "All AI Agents Utilized"
@@ -418,45 +438,46 @@ async def emailjs_health_check():
     }
 
 @app.post("/system/reset")
-async def reset_emailjs_system():
-    """Reset all EmailJS system data"""
-    global appointments_db, patients_db, reports_db, emailjs_logs
+async def reset_groq_system():
+    """Reset all Groq system data"""
+    global appointments_db, patients_db, reports_db, email_logs
     appointments_db.clear()
     patients_db.clear()
     reports_db.clear()
-    emailjs_logs.clear()
+    email_logs.clear()
     
     return {
         "success": True,
-        "message": "EmailJS system data reset successfully",
-        "email_service": "EmailJS",
+        "message": "Groq system data reset successfully",
+        "llm_provider": "Groq",
         "timestamp": datetime.now().isoformat()
     }
 
 if __name__ == "__main__":
     import uvicorn
-    print("🚀 Starting EmailJS Healthcare AI FastAPI Server...")
-    print("✨ EmailJS Features:")
-    print("   - Frontend EmailJS Integration")
-    print("   - No SMTP Configuration Required")
-    print("   - Browser-based Email Delivery")
-    print("   - Enhanced PDF Reports")
-    print("   - Comprehensive Medical Analysis")
-    print("\n📋 EmailJS Endpoints:")
-    print("   - POST /process-patient-enhanced")
-    print("   - POST /medical-analysis-enhanced") 
-    print("   - GET  /emailjs-logs")
-    print("   - GET  /providers (EmailJS ready)")
-    print("   - GET  /appointments (EmailJS enhanced)")
+    print("🚀 Starting Groq Healthcare AI FastAPI Server...")
+    print("✨ New Features:")
+    print("   - Groq LLM Integration (llama-3.1-70b-versatile)")
+    print("   - FIXED: Email delivery to patient's email address")
+    print("   - Enhanced AI Medical Analysis")
+    print("   - Date/Time Preferences")
+    print("   - All CrewAI Agents Utilized")
+    print("   - Comprehensive PDF Reports")
+    print("\n📋 Groq Endpoints:")
+    print("   - POST /process-patient-groq")
+    print("   - POST /medical-analysis-groq") 
+    print("   - GET  /email-logs")
+    print("   - GET  /providers (Groq ready)")
+    print("   - GET  /appointments (Groq enhanced)")
     print("\n🌐 Server: http://localhost:8000")
     print("📚 API Docs: http://localhost:8000/docs")
-    print("\n📧 EmailJS Setup Required:")
-    print("   - Create EmailJS account")
-    print("   - Set up email service")
-    print("   - Configure environment variables")
+    print("\n🔧 Required Environment Variables:")
+    print("   - GROQ_API_KEY (your Groq API key)")
+    print("   - EMAIL_ADDRESS (your Gmail address)")
+    print("   - EMAIL_APP_PASSWORD (Gmail app password)")
     
     uvicorn.run(
-        "emailjs_main:app",
+        "groq_main:app",
         host="0.0.0.0",
         port=8000,
         reload=True
